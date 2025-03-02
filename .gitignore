@@ -1,0 +1,10 @@
+vendor
+.idea
+.idea/
+.vscode/
+**/*.db
+bin/
+binary/
+.air.toml
+.env
+temp/
