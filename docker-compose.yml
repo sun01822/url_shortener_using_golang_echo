@@ -15,9 +15,6 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      mysql_url_shortener:
-        condition: service_healthy
     networks:
       - url_shortener
   mysql_url_shortener:
@@ -27,17 +24,10 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_volume_url_shortener:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "${DB_HOST}", "-u", "${DB_USERNAME}", "--password=${DB_PASSWORD}"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-      start_period: 15s 
     networks:
       - url_shortener
 
