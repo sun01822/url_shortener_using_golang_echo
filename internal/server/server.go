@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"url_shortener/internal/redis"
 
 	_ "github.com/joho/godotenv/autoload"
 
@@ -13,15 +14,17 @@ import (
 )
 
 type Server struct {
-	port int
-	db   database.Service
+	port  int
+	db    database.Service
+	redis *redis.Service
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	NewServer := &Server{
-		port: port,
-		db:   database.New(),
+		port:  port,
+		db:    database.New(),
+		redis: redis.New(),
 	}
 
 	// Declare Server config
