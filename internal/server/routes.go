@@ -24,6 +24,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/health", s.healthHandler)
 
+	e.GET("/redis-health", s.redisHealthHandler)
+
 	return e
 }
 
@@ -37,4 +39,8 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 
 func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.db.Health())
+}
+
+func (s *Server) redisHealthHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK, s.redis.Health())
 }
