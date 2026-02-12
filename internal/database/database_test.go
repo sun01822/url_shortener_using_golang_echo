@@ -72,7 +72,7 @@ func TestNew(t *testing.T) {
 func TestHealth(t *testing.T) {
 	srv := New()
 
-	stats := srv.Health()
+	stats := GetService(srv).Health()
 
 	if stats["status"] != "up" {
 		t.Fatalf("expected status to be up, got %s", stats["status"])
@@ -90,7 +90,7 @@ func TestHealth(t *testing.T) {
 func TestClose(t *testing.T) {
 	srv := New()
 
-	if srv.Close() != nil {
+	if GetService(srv).Close() != nil {
 		t.Fatalf("expected Close() to return nil")
 	}
 }

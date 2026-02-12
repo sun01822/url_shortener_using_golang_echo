@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       target: prod
     restart: unless-stopped
+    container_name: url_shortener_app
     ports:
       - ${PORT}:${PORT}
     environment:
@@ -15,19 +16,37 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      REDIS_ADDRESS: ${REDIS_ADDRESS}
+      REDIS_PASS: ${REDIS_PASS}
+      REDIS_DB: ${REDIS_DB}
     networks:
       - url_shortener
   mysql_url_shortener:
     image: mysql:latest
     restart: unless-stopped
+    container_name: mysql_url_shortener
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_volume_url_shortener:/var/lib/mysql
+    networks:
+      - url_shortener
+
+  redis_url_shortener:
+    image: redis:latest
+    restart: unless-stopped
+    container_name: redis_url_shortener
+    environment:
+        REDIS_PASSWORD: ${REDIS_PASS}
+        REDIS_DB: ${REDIS_DB}
+    ports:
+      - "6380:6379"
     networks:
       - url_shortener
 

@@ -6,17 +6,23 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"url_shortener/internal/controller"
 	"url_shortener/internal/redis"
-
-	_ "github.com/joho/godotenv/autoload"
+	"url_shortener/internal/repository"
+	"url_shortener/internal/service"
 
 	"url_shortener/internal/database"
+
+	_ "github.com/joho/godotenv/autoload"
+	"gorm.io/gorm"
 )
 
 type Server struct {
-	port  int
-	db    database.Service
-	redis *redis.Service
+	port       int
+	db         *gorm.DB
+	dbSvc      *database.Service
+	redis      *redis.Service
+	controller *controller.UrlController
 }
 
 func NewServer() *http.Server {
@@ -26,6 +32,13 @@ func NewServer() *http.Server {
 		db:    database.New(),
 		redis: redis.New(),
 	}
+
+	NewServer.dbSvc = database.GetService(NewServer.db)
+
+	newDB := repository.NewUrlRepository(NewServer.db)
+	newService := service.NewUrlService(newDB)
+	newController := controller.NewUrlController(newService)
+	NewServer.controller = newController
 
 	// Declare Server config
 	server := &http.Server{
