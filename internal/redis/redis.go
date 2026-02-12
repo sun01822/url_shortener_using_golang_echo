@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/labstack/gommon/log"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -53,6 +54,7 @@ func (s *Service) Health() map[string]string {
 
 	_, err = rdb.Ping(ctx).Result()
 	if err != nil {
+		log.Error(err.Error())
 		return map[string]string{
 			"status": "unhealthy",
 			"error":  err.Error(),

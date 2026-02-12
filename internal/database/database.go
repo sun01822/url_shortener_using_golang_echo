@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/labstack/gommon/log"
 )
 
 // Service represents a service that interacts with a database.
@@ -22,6 +22,10 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	// Migrate runs database migrations to set up or update the database schema.
+	// It returns an error if the migration process fails.
+	Migrate() error
 }
 
 type service struct {
@@ -71,9 +75,9 @@ func (s *service) Health() map[string]string {
 	// Ping the database
 	err := s.db.PingContext(ctx)
 	if err != nil {
+		log.Error(err.Error())
 		stats["status"] = "down"
 		stats["error"] = fmt.Sprintf("db down: %v", err)
-		log.Fatalf("db down: %v", err) // Log the error and terminate the program
 		return stats
 	}
 
@@ -117,4 +121,27 @@ func (s *service) Health() map[string]string {
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", dbname)
 	return s.db.Close()
+}
+
+func (s *service) Migrate() error {
+	log.Printf("Migrating database: %s", dbname)
+	_, err := s.db.Exec("CREATE DATABASE IF NOT EXISTS " + dbname)
+	if err != nil {
+		return fmt.Errorf("failed to create database: %v", err)
+	}
+	_, err = s.db.Exec(`
+		CREATE TABLE IF NOT EXISTS urls (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			original_url VARCHAR(255) NOT NULL,
+		    short_url VARCHAR(8) NOT NULL UNIQUE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		    deleted_at TIMESTAMP NULL DEFAULT NULL
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to run migrations: %v", err)
+	}
+	log.Printf("Database migrations completed successfully.")
+	return nil
 }

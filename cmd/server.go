@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"context"
@@ -8,9 +8,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	"url_shortener/internal/server"
+
+	"github.com/spf13/cobra"
 )
+
+func init() {
+	rootCmd.AddCommand(serverCmd)
+}
 
 func gracefulShutdown(apiServer *http.Server, done chan bool) {
 	// Create context that listens for the interrupt signal from the OS.
@@ -37,8 +42,15 @@ func gracefulShutdown(apiServer *http.Server, done chan bool) {
 	done <- true
 }
 
-func main() {
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "Start the HTTP server",
+	Run: func(cmd *cobra.Command, args []string) {
+		startServer()
+	},
+}
 
+func startServer() {
 	server := server.NewServer()
 
 	log.Println("Server is running on port", server.Addr)
