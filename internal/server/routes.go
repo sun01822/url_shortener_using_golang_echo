@@ -22,11 +22,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/", s.HelloWorldHandler)
 
-	e.GET("/health", s.healthHandler)
+	e.GET("/db-health", s.healthHandler)
 
 	e.GET("/redis-health", s.redisHealthHandler)
 
 	e.GET("/migrate", s.migrateHandler)
+
+	u := e.Group("/api/v1")
+	{
+		u.POST("/shorten", s.controller.CreateShortUrl)
+		u.GET("/shorten/:code", s.controller.GetOriginalUrl)
+	}
 
 	return e
 }
@@ -40,7 +46,7 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 }
 
 func (s *Server) healthHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, s.db.Health())
+	return c.JSON(http.StatusOK, s.dbSvc.Health())
 }
 
 func (s *Server) redisHealthHandler(c echo.Context) error {
@@ -48,15 +54,10 @@ func (s *Server) redisHealthHandler(c echo.Context) error {
 }
 
 func (s *Server) migrateHandler(c echo.Context) error {
-	err := s.db.Migrate()
+	err := s.dbSvc.Migrate()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"status": "migration failed",
-			"error":  err.Error(),
-		})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"status": "migration successful",
-	})
+	return c.JSON(http.StatusOK, map[string]string{"message": "Migration successful"})
 }

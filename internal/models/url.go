@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -11,12 +13,15 @@ type CreateShortUrlRequest struct {
 }
 
 type CreateShortUrlResponse struct {
-	ShortUrl string `json:"short_url"`
+	ShortUrl  string    `json:"short_url"`
+	CreatedAt time.Time `json:"created_at"`
+	CreatedBy string    `json:"created_by"`
+	Status    string    `json:"status"`
 }
 
 func (r *CreateShortUrlRequest) Validate() error {
 	return v.ValidateStruct(r,
 		v.Field(&r.OriginalUrl, v.Required, is.URL),
-		v.Field(&r.CustomShortUrl, v.NilOrNotEmpty, v.Length(4, 8)),
+		v.Field(&r.CustomShortUrl, v.Length(4, 8)),
 	)
 }
