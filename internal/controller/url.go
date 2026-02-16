@@ -49,7 +49,7 @@ func (c *UrlController) GetOriginalUrl(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	return ctx.JSON(http.StatusTemporaryRedirect, map[string]string{"original_url": resp.OriginalUrl})
+	return ctx.JSON(http.StatusPermanentRedirect, map[string]string{"original_url": resp.OriginalUrl})
 }
 
 func (c *UrlController) DeleteShortUrl() error {
