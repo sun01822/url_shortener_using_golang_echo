@@ -33,6 +33,13 @@ func New() *Service {
 		DB:       db,
 	})
 
+	ctx := context.Background()
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		log.Fatalf("failed to connect to Redis: %v", err)
+	}
+
+	log.Info("connected to Redis")
+
 	return &Service{
 		redis: rdb,
 	}
@@ -41,18 +48,7 @@ func New() *Service {
 func (s *Service) Health() map[string]string {
 	ctx := context.Background()
 
-	db, err := strconv.Atoi(redisDB)
-	if err != nil {
-		db = 0 // Default to DB 0 if conversion fails
-	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisAddress,
-		Username: redisUser,
-		Password: redisPass,
-		DB:       db,
-	})
-
-	_, err = rdb.Ping(ctx).Result()
+	_, err := s.redis.Ping(ctx).Result()
 	if err != nil {
 		log.Error(err.Error())
 		return map[string]string{

@@ -8,7 +8,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/gommon/log"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -25,13 +25,21 @@ var (
 )
 
 func New() *gorm.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, host, port, dbname)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=UTC",
+		host,
+		username,
+		password,
+		dbname,
+		port,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	log.Info("connected to database")
+	log.Printf("connected to PostgreSQL database")
 
 	return db
 }
@@ -85,25 +93,27 @@ func (s *Service) Close() error {
 }
 
 func (s *Service) Migrate() error {
-	log.Printf("Migrating database: %s", dbname)
+	log.Printf("Running PostgreSQL migrations")
+
 	sqlDB, err := s.db.DB()
-	_, err = sqlDB.Exec("CREATE DATABASE IF NOT EXISTS " + dbname)
 	if err != nil {
-		return fmt.Errorf("failed to create database: %v", err)
+		return fmt.Errorf("failed to get DB instance: %v", err)
 	}
+
 	_, err = sqlDB.Exec(`
 		CREATE TABLE IF NOT EXISTS urls (
-			id INT AUTO_INCREMENT PRIMARY KEY,
+			id BIGSERIAL PRIMARY KEY,
 			original_url VARCHAR(255) NOT NULL,
-		    short_url VARCHAR(8) NOT NULL UNIQUE,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		    deleted_at TIMESTAMP NULL DEFAULT NULL
+			short_url VARCHAR(8) NOT NULL UNIQUE,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+			deleted_at TIMESTAMPTZ NULL
 		)
 	`)
 	if err != nil {
 		return fmt.Errorf("failed to run migrations: %v", err)
 	}
-	log.Printf("Database migrations completed successfully.")
+
+	log.Printf("PostgreSQL migrations completed successfully.")
 	return nil
 }
