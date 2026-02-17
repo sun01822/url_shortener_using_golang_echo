@@ -40,7 +40,7 @@ func (c *UrlController) CreateShortUrl(ctx echo.Context) error {
 
 func (c *UrlController) GetOriginalUrl(ctx echo.Context) error {
 	code := ctx.Param("code")
-	if code == "" || len(code) < 8 {
+	if code == "" || len(code) < 4 {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid short URL code"})
 	}
 
