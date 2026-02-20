@@ -2,10 +2,12 @@ package service
 
 import (
 	"crypto/sha256"
-	"github.com/jxskiss/base62"
+	"errors"
 	"url_shortener/internal/entity"
 	"url_shortener/internal/models"
 	"url_shortener/internal/repository"
+
+	"github.com/jxskiss/base62"
 
 	"github.com/labstack/gommon/log"
 )
@@ -48,6 +50,16 @@ func (s *urlService) CreateShortUrl(request models.CreateShortUrlRequest) (model
 		url.ShortUrl = generateShortUrl(request.OriginalUrl)
 	}
 
+	// check that if url.ShortUrl already exists in db or not
+	existingUrl, err := s.repo.Get(url.ShortUrl)
+	if err != nil {
+		return models.CreateShortUrlResponse{}, err
+	}
+
+	if existingUrl != nil && existingUrl.ID != 0 {
+		return models.CreateShortUrlResponse{}, errors.New("Url already exists")
+	}
+
 	resp, err := s.repo.Create(&url)
 	if err != nil {
 		log.Error(err.Error())
@@ -63,7 +75,11 @@ func (s *urlService) CreateShortUrl(request models.CreateShortUrlRequest) (model
 }
 
 func (s *urlService) GetOriginalUrl(shortCode string) (*entity.Url, error) {
-	return s.repo.Get(shortCode)
+	url, err := s.repo.Get(shortCode)
+	if err != nil {
+		return &entity.Url{}, errors.New("Url not found")
+	}
+	return url, nil
 }
 
 func (s *urlService) DeleteShortUrl() {
