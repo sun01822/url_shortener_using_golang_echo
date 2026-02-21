@@ -117,3 +117,20 @@ func (s *Service) Migrate() error {
 	log.Printf("PostgreSQL migrations completed successfully.")
 	return nil
 }
+
+func (s *Service) Clear() error {
+	log.Printf("Clearing all urls")
+
+	sqlDB, err := s.db.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get DB instance: %v", err)
+	}
+
+	_, err = sqlDB.Exec(`DELETE From URLS WHERE 1 = 1`)
+	if err != nil {
+		return fmt.Errorf("failed to delete")
+	}
+
+	log.Printf("Clearing all short_urls")
+	return nil
+}
