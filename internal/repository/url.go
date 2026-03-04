@@ -39,7 +39,9 @@ func (r *urlRepository) Create(url *entity.Url) (*entity.Url, error) {
 
 func (r *urlRepository) Get(shortCode string) (*entity.Url, error) {
 	var url entity.Url
-	err := r.db.Where("short_url = ?", shortCode).Find(&url).Error
+	err := r.db.Where("short_url = ?", shortCode).
+		Where("deleted_at is null").
+		Find(&url).Error
 	if err != nil {
 		return &entity.Url{}, err
 	}
