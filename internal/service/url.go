@@ -76,9 +76,10 @@ func (s *urlService) CreateShortUrl(request models.CreateShortUrlRequest) (model
 
 func (s *urlService) GetOriginalUrl(shortCode string) (*entity.Url, error) {
 	url, err := s.repo.Get(shortCode)
-	if err != nil {
+	if err != nil || url.OriginalUrl == "" {
 		return &entity.Url{}, errors.New("Url not found")
 	}
+
 	return url, nil
 }
 
