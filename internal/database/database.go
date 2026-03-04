@@ -126,7 +126,7 @@ func (s *Service) Clear() error {
 		return fmt.Errorf("failed to get DB instance: %v", err)
 	}
 
-	_, err = sqlDB.Exec(`DELETE From URLS WHERE id is not null`)
+	_, err = sqlDB.Exec(`UPDATE URLS SET deleted_at = ? WHERE id IS NOT NULL`, time.Now())
 	if err != nil {
 		return fmt.Errorf("failed to delete")
 	}
