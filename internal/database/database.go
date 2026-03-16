@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/gommon/log"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -26,20 +26,20 @@ var (
 
 func New() *gorm.DB {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=UTC",
-		host,
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		username,
 		password,
-		dbname,
+		host,
 		port,
+		dbname,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	log.Printf("connected to PostgreSQL database")
+	log.Printf("connected to MySQL database")
 
 	return db
 }
@@ -93,7 +93,7 @@ func (s *Service) Close() error {
 }
 
 func (s *Service) Migrate() error {
-	log.Printf("Running PostgreSQL migrations")
+	log.Printf("Running MySQL migrations")
 
 	sqlDB, err := s.db.DB()
 	if err != nil {
@@ -102,19 +102,19 @@ func (s *Service) Migrate() error {
 
 	_, err = sqlDB.Exec(`
 		CREATE TABLE IF NOT EXISTS urls (
-			id BIGSERIAL PRIMARY KEY,
+			id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			original_url VARCHAR(255) NOT NULL,
 			short_url VARCHAR(8) NOT NULL UNIQUE,
-			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			deleted_at TIMESTAMPTZ NULL
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			deleted_at TIMESTAMP NULL
 		)
 	`)
 	if err != nil {
 		return fmt.Errorf("failed to run migrations: %v", err)
 	}
 
-	log.Printf("PostgreSQL migrations completed successfully.")
+	log.Printf("MySQL migrations completed successfully.")
 	return nil
 }
 
