@@ -25,7 +25,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/db-health", s.healthHandler)
 
-	e.GET("/redis-health", s.redisHealthHandler)
+	//e.GET("/redis-health", s.redisHealthHandler)
 
 	e.GET("/migrate", s.migrateHandler, middleware2.CustomAuth())
 	e.GET("/clear", s.clearHandler, middleware2.CustomAuth())
@@ -51,9 +51,9 @@ func (s *Server) healthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, s.dbSvc.Health())
 }
 
-func (s *Server) redisHealthHandler(c echo.Context) error {
-	return c.JSON(http.StatusOK, s.redis.Health())
-}
+//func (s *Server) redisHealthHandler(c echo.Context) error {
+//	return c.JSON(http.StatusOK, s.redis.Health())
+//}
 
 func (s *Server) migrateHandler(c echo.Context) error {
 	err := s.dbSvc.Migrate()
