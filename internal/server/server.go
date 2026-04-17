@@ -28,9 +28,9 @@ type Server struct {
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	NewServer := &Server{
-		port:  port,
-		db:    database.New(),
-		redis: redis.New(),
+		port: port,
+		db:   database.New(),
+		//redis: redis.New(),
 	}
 
 	NewServer.dbSvc = database.GetService(NewServer.db)
