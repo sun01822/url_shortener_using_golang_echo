@@ -46,7 +46,7 @@ func (c *UrlController) GetOriginalUrl(ctx echo.Context) error {
 
 	resp, err := c.svc.GetOriginalUrl(code)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 
 	return ctx.JSON(http.StatusPermanentRedirect, map[string]string{"original_url": resp.OriginalUrl})
