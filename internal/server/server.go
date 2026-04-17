@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 	"url_shortener/internal/controller"
-	"url_shortener/internal/redis"
 	"url_shortener/internal/repository"
 	"url_shortener/internal/service"
 
@@ -18,10 +17,10 @@ import (
 )
 
 type Server struct {
-	port       int
-	db         *gorm.DB
-	dbSvc      *database.Service
-	redis      *redis.Service
+	port  int
+	db    *gorm.DB
+	dbSvc *database.Service
+	//redis      *redis.Service
 	controller *controller.UrlController
 }
 
