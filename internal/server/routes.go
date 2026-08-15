@@ -25,6 +25,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	e.GET("/db-health", s.healthHandler)
 
+	e.HEAD("/health", s.HealthHandler)
+
 	//e.GET("/redis-health", s.redisHealthHandler)
 
 	e.GET("/migrate", s.migrateHandler, middleware2.CustomAuth())
@@ -45,6 +47,10 @@ func (s *Server) HelloWorldHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, resp)
+}
+
+func (s *Server) HealthHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{"message": "OK"})
 }
 
 func (s *Server) healthHandler(c echo.Context) error {
