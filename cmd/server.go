@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"url_shortener/internal/scheduler"
 	"url_shortener/internal/server"
 
 	"github.com/spf13/cobra"
@@ -55,6 +56,11 @@ func startServer() {
 
 	log.Println("Server is running on port", server.Addr)
 
+	// Start the in-process scheduler that pings the database health API
+	// every 10 minutes.
+	schedCtx, stopScheduler := context.WithCancel(context.Background())
+	go scheduler.New(fmt.Sprintf("http://localhost%s", server.Addr)).Start(schedCtx)
+
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan bool, 1)
 
@@ -68,5 +74,8 @@ func startServer() {
 
 	// Wait for the graceful shutdown to complete
 	<-done
+
+	// Stop the database health scheduler.
+	stopScheduler()
 	log.Println("Graceful shutdown complete.")
 }
